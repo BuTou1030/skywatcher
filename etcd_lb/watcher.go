@@ -11,7 +11,7 @@ import (
 )
 
 type watcher struct {
-	resolver      *resolver
+	resolver      *Resolver
 	isInitialized bool
 }
 

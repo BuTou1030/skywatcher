@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc/naming"
 )
 
-type resolver struct {
+type Resolver struct {
 	projectName string
 	moduleName  string
 	targetAddr  string
@@ -19,8 +19,8 @@ type resolver struct {
 // targetAddr：目标注册中心地址，如etcd数据库、Redis数据库等
 // userName：注册中心登录用户名
 // passWord：注册中心登录密码
-func NewResolver(projectName, moduleName, userName, passWord string) *resolver {
-	return &resolver{
+func NewResolver(projectName, moduleName, userName, passWord string) *Resolver {
+	return &Resolver{
 		projectName: projectName,
 		moduleName:  moduleName,
 		userName:    userName,
@@ -28,7 +28,7 @@ func NewResolver(projectName, moduleName, userName, passWord string) *resolver {
 	}
 }
 
-func (re *resolver) Resolve(target string) (naming.Watcher, error) {
+func (re *Resolver) Resolve(target string) (naming.Watcher, error) {
 	if re.projectName == "" || re.moduleName == "" {
 		return nil, fmt.Errorf("projectName or moduleName was nil")
 	}
