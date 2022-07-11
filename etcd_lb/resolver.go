@@ -2,16 +2,17 @@ package etcd_lb
 
 import (
 	"fmt"
-
-	"google.golang.org/grpc/naming"
+	"google.golang.org/grpc/resolver"
 )
+
+const schema = "etcdv3_resolver"
 
 type Resolver struct {
 	projectName string
 	moduleName  string
-	targetAddr  string
 	userName    string
 	passWord    string
+	targetAddr  string
 }
 
 // projectName：项目名称，用于树形存储的根路径
@@ -19,20 +20,39 @@ type Resolver struct {
 // targetAddr：目标注册中心地址，如etcd数据库、Redis数据库等
 // userName：注册中心登录用户名
 // passWord：注册中心登录密码
-func NewResolver(projectName, moduleName, userName, passWord string) *Resolver {
+func NewResolver(projectName, moduleName, userName, passWord, targetAddr string) *Resolver {
 	return &Resolver{
 		projectName: projectName,
 		moduleName:  moduleName,
 		userName:    userName,
 		passWord:    passWord,
+		targetAddr:  targetAddr,
 	}
 }
 
-func (re *Resolver) Resolve(target string) (naming.Watcher, error) {
+// Scheme return etcdv3 schema
+func (re *Resolver) Scheme() string {
+	return schema
+}
+
+func (re *Resolver) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
+	var err error
 	if re.projectName == "" || re.moduleName == "" {
-		return nil, fmt.Errorf("projectName or moduleName was nil")
+		err = fmt.Errorf("projectName or moduleName was nil")
+		return nil, err
 	}
-	re.targetAddr = target
 
-	return &watcher{resolver: re, isInitialized: false}, nil
+	var w = NewWatcher(re, false, cc)
+	go w.watch()
+	
+	return re, nil
 }
+
+// ResolveNow
+func (re *Resolver) ResolveNow(rn resolver.ResolveNowOptions) {
+}
+
+// Close
+func (re *Resolver) Close() {
+}
+

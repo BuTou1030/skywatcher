@@ -26,6 +26,8 @@ import (
 	"flag"
 	"skywatcher/etcd_lb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/balancer/roundrobin"
+	"google.golang.org/grpc/resolver"
 	pb "google.golang.org/grpc/examples/helloworld/helloworld"
 )
 
@@ -38,12 +40,12 @@ func main() {
 	var targetAddr = "http://127.0.0.1:12379"
 	var userName = ""
 	var passWord = ""
-
-	r := etcd_lb.NewResolver(projectName, moduleName, userName, passWord)
-	b := grpc.RoundRobin(r)
-
+	r := etcd_lb.NewResolver(projectName, moduleName, userName, passWord, targetAddr)
+	resolver.Register(r)
+	// ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	// Set up a connection to the server.
-	conn, err := grpc.DialContext(context.Background(), targetAddr, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithBalancer(b))
+	conn, err := grpc.DialContext(context.Background(), r.Scheme()+"://authority/"+targetAddr, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithBalancerName(roundrobin.Name))
+	// cancel()
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
