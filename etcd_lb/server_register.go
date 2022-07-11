@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coreos/etcd/clientv3"
+	"go.etcd.io/etcd/client/v3"
 )
 
 // Register 非阻塞，在主线程中调用该方法一次，以心跳形式将当前服务地址写入服务注册中心。
